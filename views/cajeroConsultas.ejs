@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Super</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">SuperMarket</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/cajeroVentas">Venta</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/consulta">ConsultarPrecio</a>
+              </li>
+             
+              
+            </ul>
+            
+             <% if(login){%>
+              <a class="btn btn-outline-warning" "> <%= name %> </a>
+              <%}%>
+              &nbsp;&nbsp;
+              <a class="btn btn-outline-warning" href="/">Logout</a>
+            <span></span>
+           
+          </div>
+        </div>
+      </nav>
+    <br><br>
+</div>
+                <div class="text-center mt-5 mb-5">
+               <div style= "max-width:380px;margin:auto">
+
+               
+                <img class="mb-1" src="">
+                <h1 class="mb-3 text-dark">Consultar Precio</h1>
+                <label for="Usuario"class="sr-only"></label>
+                <input type="text" id='consulta' class="form-control"placeholder="Digite el Codigo del Articulo "required autofocus name="codigo" id="codigo" >
+                
+                <div class="checkbox mt-3"></div>
+                <div class="d-grid gap-2">
+                <button onclick="consultita()" class="btn btn-dark btn-lg btn-block">Consultar Precio</button>
+                </div>
+              </div>
+
+         
+            
+           
+
+    </div>
+                
+            
+            
+            
+
+            </div>
+
+<script>
+const consulta = document.getElementById('consulta')
+const url ='http://localhost:3030/api/CajeroArticuloConsulta';
+const consultita = async()=>{
+
+  const con =consulta.value;
+  const data={
+    consulta: con,
+  }
+
+
+    await axios.post(url,data)
+  .then(response=>{
+    
+    console.log(response.data)
+    if(data.consulta == response.data.EAN) {
+      Swal.fire({
+        title: `Articulo: ${response.data.descripcion} \n Precio:${response.data.precio} \n Peso:${response.data.peso}`,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      })
+    }
+    else{
+
+      if(data.consulta == response.data.PLU){
+      Swal.fire({
+        title: `Articulo: ${response.data.descripcion} \n Precio:${response.data.precio} \n Cantidad:${response.data.cantidad}`,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      })
+    }
+    if(response.data.res == 'no'){
+      Swal.fire({
+        position: 'top-end',
+        icon: 'warning',
+        title: 'Producto no Encontrado',
+        showConfirmButton: true,
+        timer: false
+      })
+    }
+  }
+    
+  })
+ 
+}
+
+
+
+</script>
+    
+  </body>
+</html>

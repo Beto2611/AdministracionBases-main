@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Super</title>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">SuperMarket</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/cajeroVentas">Venta</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/consulta">ConsultarPrecio</a>
+              </li>
+              
+              
+            </ul>
+            <form class="d-flex">
+            
+              <% if(login){%>
+                <a class="btn btn-outline-warning" "> <%= name %> </a>
+                <%}%>
+                &nbsp;&nbsp;
+            </form>
+            <a class="btn btn-outline-warning" href="/">Logout</a>
+          </div>
+        </div>
+      </nav>
+    
+<div class="container-fluid">
+<br><br>
+    
+
+</div>
+
+<div class="container mt-4 shadow-lg p-3 mb-5 bg-body rounded">
+<div>
+   <h1 id= 'nofactura'>   </h1>
+</div>
+<div style= "width:380px">
+  <button onclick="insertaFacturas()" class="btn btn-warning">Facturar</button>
+</div>
+<div style= "max-width:380px;margin:auto">
+  <input id='codigoProducto' type="text" class="form-control " id="Descripcion" placeholder="Digite el codigo del Producto">
+  <br><br> 
+  <button type="text" onclick="AgregarProducto()" class="btn btn-warning">Agregar Producto</button>
+</div>
+    
+    
+    
+    <div id='teemo'>
+
+    </div>
+<br>
+<table id="tablaArticulos" class="table mt-2 table-bordered table-striped">
+  <thead>
+      <tr class="text-center">
+          <th>Codigo</th>
+          <th>Descripcion</th>
+          <th>Precio</th>
+          <th>Cantidad/Peso</th>
+          <th>Area</th>
+          <th>Acciones</th>
+
+
+      </tr>
+  </thead>
+  <tbody>
+      
+  </tbody>
+
+  
+</table>
+</div>
+
+<div class="modal fade" id="modalArticulo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Agregar Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+    <div class="modal-body">
+      <form id='formModal' >
+        <div class="mb-3">
+          <label for="Stock" class="col-form-label">Cantidad o Peso En Gramos</label>
+          <input type="number" class="form-control" id="Stock">
+        </div>
+       
+      
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+  </form>
+  </div>
+</div>
+</div>
+  </body>
+  <script>
+  const url= "http://localhost:3030/api/CajeroArticulo/"
+  const codigoProducto = document.getElementById('codigoProducto');
+  let cantidadArticulo=1;
+  let totalEAN =0;
+  let totalPLU=0;
+  let total =0;
+  let NO_FACTURA = 0;
+  let estadoArticulo =  false;
+  
+  const modal = new bootstrap.Modal(document.getElementById('modalArticulo'))
+        const formArticulo = document.getElementById('formModal');
+          const descripcion = document.getElementById('Descripcion');
+          const totalito = document.getElementById('teemo');
+          const stock = document.getElementById('Stock');
+          const codigo = document.getElementById('codigo');
+          const cost = document.getElementById('Precio')
+          const contenedor = document.querySelector("tbody")
+          let cod = '';
+          let seleccionado = ''; 
+          let opcion=''
+          let resultados=''
+          let articulosFactura=[];
+    
+
+    const muestra = (articulo)=>{   
+      articulosFactura.forEach(articulo => {
+        if(articulo.EAN === '0'){
+        resultados+=`<tr>
+                <td>${articulo.PLU}</td>
+                <td>${articulo.descripcion}</td>
+                <td>${articulo.precio}</td>
+                <td>${articulo.peso}</td>
+                <td>${articulo.desciption}</td>
+                <td class="text-center"></a><a class="btnEditar btn btn-primary " >Editar</a>&nbsp;<a class="btnBorrar btn btn-danger">Eliminar</a></td>
+                  </tr>
+                  `
+       }if(articulo.PLU === '0'){
+        
+        resultados+=`<tr>
+                <td>${articulo.EAN}</td>
+                <td>${articulo.descripcion}</td>
+                <td>${articulo.precio}</td>
+                <td>${articulo.cantidad}</td>
+                <td>${articulo.desciption}</td>
+                <td class="text-center"></a><a  class="btnEditar btn btn-primary " >Editar</a>&nbsp;<a class="btnBorrar btn btn-danger">Eliminar</a></td>
+                  </tr>
+                  `
+       }
+                  
+                  contenedor.innerHTML = resultados     
+      
+      });
+      
+     
+   }
+   const insertaFacturas= ()=>{
+     let datos = [];
+      
+      const noFactura = NO_FACTURA; 
+     //const noFactura = 0; 
+
+     console.log(articulosFactura);
+     
+     articulosFactura.forEach(articulo =>{
+      let subtotalito=0;
+      if(articulo.PLU==='0'){
+        subtotalito= articulo.cantidad * articulo.precio
+      }  
+      if(articulo.EAN==='0'){
+        subtotalito= articulo.peso  * articulo.precio
+      }  
+     
+        factura = {
+          cantidad: articulo.cantidad,
+          subtotal: subtotalito,
+          nofactura: noFactura,
+          numcaja: noFactura,
+          montototal: total,
+          idproducto: articulo.EAN,
+          idfresco: articulo.PLU,
+          Peso: articulo.peso
+        }
+        axios.post(url,factura)
+    });
+
+    location.reload();
+
+   }
+
+
+   const openModel=()=>{
+     modal.show();
+   }
+   const on = (element, event, selector, handler)=>{
+    element.addEventListener(event, e=>{
+       if(e.target.closest(selector)){
+         handler(e)
+       }
+     })
+   }
+  console.log(articulosFactura)
+const AgregarProducto = async()=>{
+  
+  const codigo = codigoProducto.value;
+
+  if(articulosFactura.find(elem => (elem.EAN === codigo)) || articulosFactura.find(elem => (elem.PLU === codigo)) ){
+    Swal.fire({
+        position: 'top-end',
+        icon: 'warning',
+        alertMessage:"Articulo ya está agregado",
+        title: 'Error articulo duplicado',
+        showConfirmButton: true,
+        timer: false
+      })
+  }else{
+    
+    if(codigo.length == 13){
+      await verificaCantidad(codigo,'0',cantidadArticulo);
+    }
+    if(codigo.length <= 5){
+      await verificaCantidad('0',codigo,cantidadArticulo);
+    }
+    if(estadoArticulo){
+    try {
+  await axios.get(url+codigo).
+      then(response=>{
+      response.data.map((Usuario) => {
+      let user = {
+      EAN: Usuario[0],
+      PLU: Usuario[1],
+      descripcion: Usuario[2],
+      precio: Usuario[3],
+      area: Usuario[4],
+      cantidad: Usuario[5],
+      peso: Usuario[6],
+      desciption: Usuario[7],
+    };
+      articulosFactura.push(user);
+      
+    
+    
+    if(user.EAN === '0'){
+      let articulo= articulosFactura.find(elem =>   elem.PLU == codigo );
+      articulo.peso = cantidadArticulo;
+    }
+    if(user.PLU === '0'){
+      let articulo= articulosFactura.find(elem =>   elem.EAN == codigo );
+      articulo.cantidad = cantidadArticulo;
+    }
+
+    console.log(articulosFactura);
+
+    if(user.EAN === '0'){
+        totalPLU += cantidadArticulo * user.precio
+        
+      }
+      if(user.PLU === '0'){
+        totalEAN += cantidadArticulo * user.precio
+      }
+      
+      muestra(articulosFactura)
+    resultados='';
+
+    total= totalEAN+totalPLU;
+
+    let totalhtml=`
+    <br><br>
+    <label for="Stock" class="col-form-label">Total</label>
+    <button type="text"  class="btn btn-warning">${total}</button>
+    `
+    totalito.innerHTML=totalhtml
+
+    estadoArticulo = false;
+    
+  });
+    
+     
+    })
+    
+    
+} catch (error) {
+  console.log(error)
+}
+  }else{
+    Swal.fire({
+        position: 'top-end',
+        icon: 'warning',
+        alertMessage:"Producto agotado",
+        title: 'Error producto agotado',
+        showConfirmButton: true,
+        timer: false
+      })
+  }
+}
+
+}
+
+
+  on(document,'click','.btnEditar',e=>{
+     const fila = e.target.parentNode.parentNode
+     idForm= fila.children[0].innerHTML
+     const descripcionForm=fila.children[1].innerHTML
+     const precioForm=fila.children[2].innerHTML
+     const stockForm =fila.children[3].innerHTML
+     const stockArea= fila.children[4].innerHTML
+    console.log(stockForm)
+
+     stock.value=stockForm
+     cod = idForm
+     
+     opcion="editar"
+     modal.show();
+      
+   })
+   on(document,'click','.btnBorrar',e=>{
+     const fila = e.target.parentNode.parentNode;
+     const id = fila.firstElementChild.innerHTML;
+     if(id.length == 13){
+      articulosFactura = articulosFactura.filter(item => item.EAN !== id )
+     }
+     if(id.length <= 5){
+      articulosFactura = articulosFactura.filter(item => item.PLU !== id )
+      }
+     const cost = fila.children[2].innerHTML
+     const cant = fila.children[3].innerHTML
+    contenedor.removeChild(fila)
+
+   if (id.length<=5) {
+    total = total-(cost*cant)
+    totalPLU= totalPLU-(cost*cant)
+   }
+   if (id.length===13) {
+    total = total-(cost*cant)
+    totalEAN = totalEAN-(cost*cant)
+   }
+
+    let totalhtml=`
+    <br><br>
+    <label for="Stock" class="col-form-label">Total</label>
+    <button type="text"  class="btn btn-warning">${total}</button>
+    
+    `
+    totalito.innerHTML=totalhtml;
+
+})
+
+const url2= "http://localhost:3030/api/CajeroArticuloNofactura/"
+const numfact= ()=>{
+  axios.get(url2).then(
+    response => {
+      document.getElementById("nofactura").innerText = 'No.factura: ' + response.data.nofact ;
+      NO_FACTURA =  response.data.nofact;
+    }
+  )
+}
+
+
+const url3= "http://localhost:3030/api/CajeroArticuloVerificaCantidad"
+const verificaCantidad = async (pEAN,pPLU,pCANTIDAD)=>{
+  const validar ={
+      EAN:pEAN,
+      PLU: pPLU,
+      CANTIDAD: pCANTIDAD,
+  }
+  await axios.post(url3,validar).then(
+    response => {
+      estadoArticulo = response.data.booleano;
+    }
+  )
+}
+
+
+formArticulo.addEventListener('submit',async (e)=>{
+    e.preventDefault();
+    if (opcion ==='editar') {
+      
+       let cantidadModal = document.getElementById('Stock').value;
+
+       if(cod.length <= 5){
+         await verificaCantidad('0',cod,cantidadModal);
+       }
+       if(cod.length == 13){
+         await verificaCantidad(cod,'0',cantidadModal)
+       }
+       if(estadoArticulo === true){
+              if(cod.length <= 5){
+                let articulo= articulosFactura.find(elem =>   elem.PLU == cod );
+                articulo.peso = cantidadModal;
+              }
+              if(cod.length == 13){
+                let articulo= articulosFactura.find(elem =>   elem.EAN == cod );
+                articulo.cantidad = cantidadModal;
+
+              }
+
+
+              //muestra(articulosFactura);
+              //resultados ='';
+              //calcular total
+              totalPLU=0;
+              totalEAN=0;
+              total = 0;
+              articulosFactura.forEach(elem => {
+                if(elem.EAN === '0'){
+                  totalPLU += elem.peso * elem.precio
+                }
+                if(elem.PLU === '0'){
+                  totalEAN += elem.cantidad * elem.precio
+                }
+                
+              });
+            
+      
+    muestra(articulosFactura)
+    resultados='';
+
+    total= totalEAN+totalPLU;
+
+    let totalhtml=`
+    <br><br>
+    <label for="Stock" class="col-form-label">Total</label>
+    <button type="text"  class="btn btn-warning">${total}</button>
+    `
+    totalito.innerHTML=totalhtml
+              
+       }else{
+        Swal.fire({
+        position: 'top-end',
+        icon: 'warning',
+        title: 'No se posee la cantidad digitada',
+        showConfirmButton: true,
+        timer: false
+      })
+       }
+
+    }
+    
+     modal.hide();
+  })
+
+document.addEventListener("DOMContentLoaded", numfact);
+  </script>
+</html>
